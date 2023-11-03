@@ -1,0 +1,14 @@
+name: fire-risk
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - matplotlib
+  - seaborn
+  - pandas
+  - pip
+  - numpy
+  - scipy
+  - scikit-image
+  pip:
+    - opencv-python
