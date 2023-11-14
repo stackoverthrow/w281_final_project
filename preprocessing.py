@@ -6,6 +6,8 @@ import random
 import matplotlib.pyplot as plt
 import os
 import seaborn as sns
+from skimage.feature import hog
+from skimage import exposure
 random.seed(12345)
 np.random.seed(12345)  # Make sure the samples are repeatable
 
@@ -519,7 +521,7 @@ def down_sample(df):
     samples = []
     labels = label_counts['label_name'].to_list()
     for label in labels:
-        sub_sample_df = df[df['label_name'] == label].sample(min_count)
+        sub_sample_df = df[df['label_name'] == label].sample(min_count, random_state=12345)
         samples.append(sub_sample_df)
     samples = pd.concat(samples).reset_index(inplace=False, drop=True)
     return samples
@@ -535,5 +537,25 @@ def draw_class_counts(df, title):
     ax.set_ylabel('Class Name')
 
 
+def load_img_rgb(img_path):
+    """Load the img with cv2 and convert color scheme to RGB"""
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return img
 
+
+def rgb_to_grayscale(img):
+    """Transform the im"""
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    img = img / 255.0
+    return img
+
+
+
+def hog_transform(img, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1,1), visualize=True):
+    """perform histogram of gradients and return the result"""
+    fd, hog_img = hog(img, orientations=orientations, pixels_per_cell=pixels_per_cell, cells_per_block=cells_per_block,
+                     visualize=visualize)
+    hog_img_rescaled = exposure.rescale_intensity(hog_img, in_range=(0, 1))
+    return hog_img_rescaled
 
