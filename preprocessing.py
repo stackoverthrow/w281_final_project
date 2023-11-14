@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from skimage.transform import rescale, rotate
+from skimage.transform import rescale, rotate, resize
 import cv2
 import random
 import matplotlib.pyplot as plt
@@ -8,6 +8,7 @@ import os
 import seaborn as sns
 from skimage.feature import hog
 from skimage import exposure
+from tensorflow.keras.applications.resnet import ResNet101
 random.seed(12345)
 np.random.seed(12345)  # Make sure the samples are repeatable
 
@@ -530,17 +531,19 @@ def down_sample(df):
 def draw_class_counts(df, title):
     """"""
     count_df = df.groupby('label_name', as_index=False)['file_name'].count().sort_values(by='file_name', ascending=False)
-    ax = sns.barplot(data=count_df, x='file_name', y='label_name')
+    ax = sns.barplot(data=count_df, x='file_name', y='label_name', color='gray')
     ax.bar_label(ax.containers[0], fmt='%d')
     ax.set_title(title)
     ax.set_xlabel('Class Count')
     ax.set_ylabel('Class Name')
 
 
-def load_img_rgb(img_path):
+def load_img_rgb(img_path, resize_dims=()):
     """Load the img with cv2 and convert color scheme to RGB"""
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if len(resize_dims) > 0:
+        img = resize(img, resize_dims)
     return img
 
 
@@ -551,11 +554,10 @@ def rgb_to_grayscale(img):
     return img
 
 
-
 def hog_transform(img, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1,1), visualize=True):
     """perform histogram of gradients and return the result"""
-    fd, hog_img = hog(img, orientations=orientations, pixels_per_cell=pixels_per_cell, cells_per_block=cells_per_block,
+    features, hog_img = hog(img, orientations=orientations, pixels_per_cell=pixels_per_cell, cells_per_block=cells_per_block,
                      visualize=visualize)
     hog_img_rescaled = exposure.rescale_intensity(hog_img, in_range=(0, 1))
-    return hog_img_rescaled
+    return features, hog_img_rescaled
 
