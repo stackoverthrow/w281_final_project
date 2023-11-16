@@ -47,7 +47,7 @@ def show_class_samples(df, n_samples=5):
     for label in unique_labels:
         fig, ax = plt.subplots(ncols=n_samples, figsize=(20, 5))
         fig.suptitle(f'{label.capitalize()}', fontsize=60)
-        img_samples = df[df['label_name'] == label]['img_path'].sample(n_samples).to_list()
+        img_samples = df[df['label_name'] == label]['img_path'].sample(n_samples, random_state=12345).to_list()
         for col in range(n_samples):
             img = cv2.imread(img_samples[col])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -543,16 +543,15 @@ def load_img_rgb(img_path, resize_dims=()):
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     if len(resize_dims) > 0:
-        img = resize(img, resize_dims)
+        img = cv2.resize(img, resize_dims)
+        img = img.astype('uint8')
     return img
-
 
 def rgb_to_grayscale(img):
     """Transform the im"""
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    img = img / 255.0
+    img = img.astype('float64') / 255.0
     return img
-
 
 def hog_transform(img, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1,1), visualize=True):
     """perform histogram of gradients and return the result"""
@@ -560,4 +559,5 @@ def hog_transform(img, orientations=8, pixels_per_cell=(16, 16), cells_per_block
                      visualize=visualize)
     hog_img_rescaled = exposure.rescale_intensity(hog_img, in_range=(0, 1))
     return features, hog_img_rescaled
+
 
