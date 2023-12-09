@@ -98,6 +98,7 @@ def filter_mislabeled_images(df):
                          'OIP-z1WgJuO8vFGlaA1fLtRTogHaE8.jpeg'],
         "butterfly":  ['ea36b60f2af4013ed1584d05fb1d4e9fe777ead218ac104497f5c97faee9bdba_640.jpg',
                           'ea37b60e2af6083ed1584d05fb1d4e9fe777ead218ac104497f5c97faeebb5bb_640.jpg',
+                          'eb35b30729f1073ed1584d05fb1d4e9fe777ead218ac104497f5c97faeebb5bb_640.png',
                           'ea37b80f2dfd1c22d2524518b7444f92e37fe5d404b0144390f8c770a1edb6_640.jpg',
                           'e83db70d28f51c22d2524518b7444f92e37fe5d404b0144390f8c770a2e9b5_640.jpg',
                           'e134b50a2efc1c22d2524518b7444f92e37fe5d404b0144390f8c770a1edb6_640.jpg',
@@ -538,26 +539,27 @@ def draw_class_counts(df, title):
     ax.set_ylabel('Class Name')
 
 
-def load_img_rgb(img_path, resize_dims=()):
+def load_img_rgb(img_path, resize_dims=(256, 256)):
     """Load the img with cv2 and convert color scheme to RGB"""
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    if len(resize_dims) > 0:
-        img = cv2.resize(img, resize_dims)
-        img = img.astype('uint8')
+    img = cv2.resize(img, resize_dims)
     return img
+
+
+def normalize_rgb_histogram(img):
+    """"""
+    R, G, B = cv2.split(img)
+    equalized_colors = [cv2.equalizeHist(c) for c in [R, G, B]]
+    img_eq = cv2.merge(equalized_colors)
+    return img_eq
+
 
 def rgb_to_grayscale(img):
     """Transform the im"""
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    img = img.astype('float64') / 255.0
+    img = img.astype('float') / 255.0
     return img
 
-def hog_transform(img, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1,1), visualize=True):
-    """perform histogram of gradients and return the result"""
-    features, hog_img = hog(img, orientations=orientations, pixels_per_cell=pixels_per_cell, cells_per_block=cells_per_block,
-                     visualize=visualize)
-    hog_img_rescaled = exposure.rescale_intensity(hog_img, in_range=(0, 1))
-    return features, hog_img_rescaled
 
 
